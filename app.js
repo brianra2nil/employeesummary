@@ -1,5 +1,13 @@
-const inquirer = require("inquirer")
+const { prompt } = require("inquirer")
+const fs = require('fs')
+const path = require('path')
 
+const render = require('./lib/htmlRenderer.js')
+
+const Employee = require('./lib/Employee.js')
+const Intern = require('./lib/Intern.js')
+const Engineer = require('./lib/Engineer.js')
+const Manager = require('./lib/Manager.js')
 let employees = []
 
 
@@ -24,12 +32,12 @@ const buildIntern = employee => {
     prompt([
       {
         type: 'input',
-        name: 'githubUsername',
-        message: 'What is your Github Username?:'
+        name: 'github',
+        message: 'What is the Github Username?:'
       }
     ])
-      .then(({ githubUsername }) => {
-        employees.push(new Engineer(employee.name, employee.id, employee.email, githubUsername))
+      .then(({ github }) => {
+        employees.push(new Engineer(employee.name, employee.id, employee.email, github))
         subMenu()
       })
       .catch(err => console.log(err))
@@ -38,7 +46,7 @@ const buildIntern = employee => {
   const buildManager = employee => {
     prompt([
       {
-        type: 'input',
+        type: 'number',
         name: 'officeNumber',
         message: 'what is your office number?:'
       }
@@ -55,17 +63,17 @@ const buildIntern = employee => {
     prompt({
       type: 'list',
       name: 'action',
-      choices: ['Make Another Product', 'Finish'],
+      choices: ['Add another employee?', 'Finished'],
       message: 'What would you like to do now?'
     })
       .then(({ action }) => {
         switch (action) {
-          case 'Make Another Product':
-            mainMenu()
+          case 'Add another employee?':
+            questionStart()
             break
-          case 'Finish':
-            const html = render(products)
-            fs.writeFileSync(path.join(__dirname, 'output', 'index.html'), html)
+          case 'Finished':
+            const html = render(employees)
+            fs.writeFileSync(path.join(__dirname, 'output', 'team.html'), html)
             break
         }
       })
@@ -73,49 +81,54 @@ const buildIntern = employee => {
   }
 
 const questionStart = () => {
-    prompt ([
+    prompt([
         {
             type: 'list',
             name: 'role',
-            choices: ['Intern', 'Engineer', 'Manager'],
+            choices: ['Employee', 'Intern', 'Engineer', 'Manager'],
             message: 'what is the role?'
         },
         {
             type: 'input',
             name: 'name',
-            message: 'what is your name?'
+            message: 'what is the name?'
         },
         {
-            type: 'input',
+            type: 'number',
             name: 'id',
-            message: 'what is your id number?'  
+            message: 'what is the id number?'  
         },
         {
             type: 'input',
             name: 'email',
-            message: 'what is your email address?'
+            message: 'what is the email address?'
         }
 
     ])
     .then(employee => {
     switch (employee.role) {
+        case 'Employee':
+        employees.push(new Employee(employee.name, employee.id, employee.email))
+        subMenu()
+        break
         case 'Intern':
-            employees.push(new Employee(employee.name, employee.id, employee.email))
-            buildIntern()
+            
+            buildIntern(employee)
             break
         case 'Engineer':
-            employees.push(new Employee(employee.name, employee.id, employee.email))
-            buildEngineer()
+            
+            buildEngineer(employee)
             break
         case 'Manager':
-            employees.push(new Employee(employee.name, employee.id, employee.email))
-            buildManager()
+           
+            buildManager(employee)
             break
     }    
     })
     .catch(err => console.log(err))
 }
 
+questionStart()
 
 // const Manager = require("./lib/Manager");
 // const Engineer = require("./lib/Engineer");
