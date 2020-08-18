@@ -1,14 +1,133 @@
-const Manager = require("./lib/Manager");
-const Engineer = require("./lib/Engineer");
-const Intern = require("./lib/Intern");
-const inquirer = require("inquirer");
-const path = require("path");
-const fs = require("fs");
+const inquirer = require("inquirer")
 
-const OUTPUT_DIR = path.resolve(__dirname, "output");
-const outputPath = path.join(OUTPUT_DIR, "team.html");
+let employees = []
 
-const render = require("./lib/htmlRenderer");
+
+
+const buildIntern = employee => {
+    prompt([
+      {
+        type: 'input',
+        name: 'school',
+        message: 'what school did they attend?:'
+      }
+    
+    ])
+      .then(({ school }) => {
+        employees.push(new Intern(employee.name, employee.id, employee.email, school))
+        subMenu()
+      })
+      .catch(err => console.log(err))
+  }
+  
+  const buildEngineer = employee => {
+    prompt([
+      {
+        type: 'input',
+        name: 'githubUsername',
+        message: 'What is your Github Username?:'
+      }
+    ])
+      .then(({ githubUsername }) => {
+        employees.push(new Engineer(employee.name, employee.id, employee.email, githubUsername))
+        subMenu()
+      })
+      .catch(err => console.log(err))
+  }
+  
+  const buildManager = employee => {
+    prompt([
+      {
+        type: 'input',
+        name: 'officeNumber',
+        message: 'what is your office number?:'
+      }
+    ])
+      .then(({ officeNumber }) => {
+        employees.push(new Manager(employee.name, employee.id, employee.email, officeNumber))
+        subMenu()
+      })
+      .catch(err => console.log(err))
+  }
+  
+
+  const subMenu = () => {
+    prompt({
+      type: 'list',
+      name: 'action',
+      choices: ['Make Another Product', 'Finish'],
+      message: 'What would you like to do now?'
+    })
+      .then(({ action }) => {
+        switch (action) {
+          case 'Make Another Product':
+            mainMenu()
+            break
+          case 'Finish':
+            const html = render(products)
+            fs.writeFileSync(path.join(__dirname, 'output', 'index.html'), html)
+            break
+        }
+      })
+      .catch(err => console.log(err))
+  }
+
+const questionStart = () => {
+    prompt ([
+        {
+            type: 'list',
+            name: 'role',
+            choices: ['Intern', 'Engineer', 'Manager'],
+            message: 'what is the role?'
+        },
+        {
+            type: 'input',
+            name: 'name',
+            message: 'what is your name?'
+        },
+        {
+            type: 'input',
+            name: 'id',
+            message: 'what is your id number?'  
+        },
+        {
+            type: 'input',
+            name: 'email',
+            message: 'what is your email address?'
+        }
+
+    ])
+    .then(employee => {
+    switch (employee.role) {
+        case 'Intern':
+            employees.push(new Employee(employee.name, employee.id, employee.email))
+            buildIntern()
+            break
+        case 'Engineer':
+            employees.push(new Employee(employee.name, employee.id, employee.email))
+            buildEngineer()
+            break
+        case 'Manager':
+            employees.push(new Employee(employee.name, employee.id, employee.email))
+            buildManager()
+            break
+    }    
+    })
+    .catch(err => console.log(err))
+}
+
+
+// const Manager = require("./lib/Manager");
+// const Engineer = require("./lib/Engineer");
+// const Intern = require("./lib/Intern");
+// const inquirer = require("inquirer");
+// // const path = require("path");
+// // const fs = require("fs");
+
+// // const OUTPUT_DIR = path.resolve(__dirname, "output");
+// // const outputPath = path.join(OUTPUT_DIR, "team.html");
+
+// // const render = require("./lib/htmlRenderer");
 
 
 // Write code to use inquirer to gather information about the development team members,
